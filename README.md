@@ -1,6 +1,6 @@
 # 📈 Stock Analyzer Dashboard
 
-An interactive stock analysis tool built with **Python, Plotly, and Streamlit**.  
+An interactive stock analysis tool built with **Python, Plotly, and Dash**.  
 This project is designed to demonstrate **data analysis, visualization, and financial insight**
 
 ---
@@ -8,13 +8,10 @@ This project is designed to demonstrate **data analysis, visualization, and fina
 ## 🚀 Features
 - Fetch live stock data using [yfinance](https://pypi.org/project/yfinance/).
 - Interactive candlestick charts with moving averages.
-- Technical indicators (RSI, MACD, Bollinger Bands).
+- Technical indicators (add as going along).
 - Risk & performance metrics:
-  - Cumulative return
-  - Annual volatility
-  - Sharpe ratio
-  - Maximum drawdown
-- Streamlit app for interactive analysis.
+  - Add as going along
+- Dash app for interactivity.
 
 ---
 
@@ -26,7 +23,8 @@ This project is designed to demonstrate **data analysis, visualization, and fina
 ## 🛠️ Tech Stack
 - **Python 3.9+**
 - **Plotly** – interactive charts
-- **Streamlit** – web app framework
+- **Pandas** – data editing
+- **Dash** – web app framework
 - **yfinance** – stock data
 
 ---
