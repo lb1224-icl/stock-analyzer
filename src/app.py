@@ -8,7 +8,6 @@ from yahooquery import search
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 app.title = "Stock Tracker"
 
-# Default stocks
 DEFAULT_STOCKS = [
     {"label": "Apple", "value": "AAPL"},
     {"label": "Microsoft", "value": "MSFT"},
@@ -23,13 +22,13 @@ DEFAULT_STOCKS = [
 ]
 
 DEFAULT_LABEL_LOOKUP = {s["value"]: s["label"] for s in DEFAULT_STOCKS}
-SEARCH_CACHE = {}  # ticker -> label
+SEARCH_CACHE = {}
+
 
 # Layout
 app.layout = html.Div([
     html.H1("Stock Tracker", className="app-title"),
 
-    # Top card: ticker left, tabs right
     html.Div([
         html.Div([
             dcc.Dropdown(
@@ -58,12 +57,12 @@ app.layout = html.Div([
         ], className="top-right")
     ], className="top-card"),
 
-    # Content area (changes based on tab)
     html.Div(id="page-content")
 ], className="app-container")
 
 
-# Dropdown options update
+
+# Dropdown search update
 @app.callback(
     Output("display-ticker-dropdown", "options"),
     Input("display-ticker-dropdown", "search_value"),
@@ -84,7 +83,6 @@ def update_options(search_value, selected_value):
         except Exception:
             pass
 
-    # Append defaults at the bottom
     default_options = []
     existing_values = [opt["value"] for opt in search_options]
     for s in DEFAULT_STOCKS:
@@ -98,159 +96,206 @@ def update_options(search_value, selected_value):
     return search_options + default_options
 
 
-# Page content update (based on tab)
+
+# Page content switch
 @app.callback(
     Output("page-content", "children"),
     Input("page-tabs", "value"),
-    Input("display-ticker-dropdown", "value"),
+    Input("display-ticker-dropdown", "value")
 )
 def render_tab(tab, ticker):
     if tab == "overview":
-        # Overview card (details to come later)
         return html.Div([
             html.Div([
-                html.H3("Overview coming soon...", style={"color": "white", "margin": "10px"})
-            ], className="card")
+                # Left metrics
+                html.Div([
+                    html.H3("Key Metrics", style={"color": "white", "margin-bottom": "15px"}),
+                    html.Div([
+                        html.Div([html.Span("PE Ratio:", className="metric-label"), html.Span(id="pe-ratio", className="metric-value")], className="metric-row"),
+                        html.Div([html.Span("Beta:", className="metric-label"), html.Span(id="beta", className="metric-value")], className="metric-row"),
+                        html.Div([html.Span("Volume:", className="metric-label"), html.Span(id="volume", className="metric-value")], className="metric-row"),
+                        html.Div([html.Span("Open:", className="metric-label"), html.Span(id="open", className="metric-value")], className="metric-row"),
+                        html.Div([html.Span("Last Close:", className="metric-label"), html.Span(id="last-close", className="metric-value")], className="metric-row"),
+                        html.Div([html.Span("Dividend Date:", className="metric-label"), html.Span(id="dividend-date", className="metric-value")], className="metric-row"),
+                        html.Div([html.Span("Earnings Date:", className="metric-label"), html.Span(id="earnings-date", className="metric-value")], className="metric-row"),
+                        html.Div([html.Span("52-Week Range:", className="metric-label"), html.Span(id="week52-range", className="metric-value")], className="metric-row"),
+                        html.Div([html.Span("Analysts Opinion:", className="metric-label"), html.Span(id="analyst-opinion", className="metric-value")], className="metric-row"),
+                    ], className="metrics-container")
+                ], className="overview-left card"),
+
+                # Right graph
+                html.Div([
+                    html.H3("Close Price History", style={"color": "white", "margin-bottom": "15px"}),
+                    dcc.Loading(
+                        id="loading-overview-graph",
+                        type="circle",
+                        children=dcc.Graph(id="overview-close-graph", className="overview-graph")
+                    )
+                ], className="overview-right card"),
+
+            ], className="overview-container")
         ])
     elif tab == "dividends":
-        # Overview card (details to come later)
-        return html.Div([
-            html.Div([
-                html.H3("Dividends coming soon...", style={"color": "white", "margin": "10px"})
-            ], className="card")
-        ])
+        return html.Div([html.Div([html.H3("Dividends coming soon...", style={"color": "white", "margin": "10px"})], className="card")])
     elif tab == "history":
-        # Overview card (details to come later)
-        return html.Div([
-            html.Div([
-                html.H3("History coming soon...", style={"color": "white", "margin": "10px"})
-            ], className="card")
-        ])
+        return html.Div([html.Div([html.H3("History coming soon...", style={"color": "white", "margin": "10px"})], className="card")])
     elif tab == "charts":
-        # Charts tab: options + chart
         return html.Div([
             html.Div([
                 html.Label("Display Options:", className="section-label"),
                 dcc.Checklist(
                     id="display-options",
-                    options=[
-                        {"label": "MA50", "value": "MA50"},
-                        {"label": "MA200", "value": "MA200"}
-                    ],
+                    options=[{"label": "MA50", "value": "MA50"}, {"label": "MA200", "value": "MA200"}],
                     value=[],
                     className="checklist"
                 )
             ], className="card"),
-
             html.Div([
                 dcc.Loading(
                     id="loading-stock-chart",
-                    type="circle",  # or "dot" / "default"
-                    children=dcc.Graph(id="stock-chart", className="stock-graph"),
-                    fullscreen=False,  # keeps loading inside the card
+                    type="circle",
+                    children=dcc.Graph(id="stock-chart", className="stock-graph")
                 )
             ], className="card")
         ])
-    else:
-        return html.Div()
+    return html.Div()
 
 
-# Update chart safely
+
+# Overview metrics
+@app.callback(
+    Output("pe-ratio", "children"),
+    Output("beta", "children"),
+    Output("volume", "children"),
+    Output("open", "children"),
+    Output("last-close", "children"),
+    Output("dividend-date", "children"),
+    Output("earnings-date", "children"),
+    Output("week52-range", "children"),
+    Output("analyst-opinion", "children"),
+    Input("display-ticker-dropdown", "value")
+)
+def update_overview_metrics(ticker_symbol):
+    if not ticker_symbol:
+        return [""] * 9
+    try:
+        ticker = yf.Ticker(ticker_symbol)
+        info = ticker.info
+
+        pe = info.get("trailingPE", "N/A")
+        beta = info.get("beta", "N/A")
+        vol = info.get("volume", "N/A")
+        o = info.get("open", "N/A")
+        last = info.get("previousClose", "N/A")
+        div_date = info.get("dividendDate", "N/A")
+        earn_date = info.get("earningsDate", "N/A")
+        week52 = f"{info.get('fiftyTwoWeekLow', 'N/A')} - {info.get('fiftyTwoWeekHigh', 'N/A')}"
+        analyst = info.get("recommendationKey", "N/A")
+
+        return [pe, beta, vol, o, last, div_date, earn_date, week52, analyst]
+    except Exception:
+        return ["N/A"] * 9
+
+@app.callback(
+    Output("overview-close-graph", "figure"),
+    Input("display-ticker-dropdown", "value"),
+    Input("overview-close-graph", "relayoutData")
+)
+def update_overview_graph(ticker_symbol, relayoutData):
+    if not ticker_symbol:
+        return go.Figure()
+
+    try:
+        ticker = yf.Ticker(ticker_symbol)
+        hist = ticker.history(start="2020-01-01", end=pd.Timestamp.today())
+
+        if hist.empty:
+            return empty_fig("Overview", "No data")
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=hist.index,
+            y=hist["Close"],
+            fill="tozeroy",
+            line=dict(color="cyan", width=2),
+            name="Close"
+        ))
+
+        fig.update_layout(
+            template="plotly_dark",
+            margin=dict(l=20, r=20, t=30, b=20),
+            xaxis=dict(type="date"),
+            uirevision="overview"
+        )
+        return fig
+
+    except Exception:
+        return empty_fig("Overview", "Error fetching data")
+
+
+
+# Main candlestick chart
 @app.callback(
     Output("stock-chart", "figure"),
     Input("display-ticker-dropdown", "value"),
     Input("display-options", "value"),
     Input("stock-chart", "relayoutData"),
 )
-def update_chart(ticker, displayOptions, relayoutData):
-    try:
-
-        if ticker is None:
-            return no_update
-
-        label = DEFAULT_LABEL_LOOKUP.get(ticker) or SEARCH_CACHE.get(ticker) or ticker
-        label_with_ticker = f"{label} ({ticker})"
-        return create_candlestick(ticker, label_with_ticker, relayoutData, displayOptions)
-    except Exception:
+def update_chart(ticker_symbol, displayOptions, relayoutData):
+    if not ticker_symbol:
         return no_update
 
+    label = DEFAULT_LABEL_LOOKUP.get(ticker_symbol) or SEARCH_CACHE.get(ticker_symbol) or ticker_symbol
+    label_with_ticker = f"{label} ({ticker_symbol})"
+    return create_candlestick(ticker_symbol, label_with_ticker, relayoutData, displayOptions)
 
-# Candlestick helpers
-def create_candlestick(ticker, label_with_ticker, relayoutData, displayOptions):
+
+
+# Candlestick creation
+def create_candlestick(ticker_symbol, label_with_ticker, relayoutData, displayOptions):
     try:
-        data = yf.download(ticker, start="2020-01-01", end=pd.Timestamp.today(), group_by="ticker")
-    except Exception:
-        return empty_fig(label_with_ticker, f"Error downloading data for {ticker}")
+        ticker = yf.Ticker(ticker_symbol)
+        data = ticker.history(start="2020-01-01", end=pd.Timestamp.today())
+        if data.empty:
+            return empty_fig(label_with_ticker, f"No data for {ticker_symbol}")
 
-    if data.empty:
-        return empty_fig(label_with_ticker, f"No data for {ticker}")
+        for col in ["Open", "High", "Low", "Close"]:
+            if col not in data.columns:
+                return empty_fig(label_with_ticker, f"No {col} data for {ticker_symbol}")
 
-    if isinstance(data.columns, pd.MultiIndex):
-        data = collapse_data(data)
+        traces = [go.Candlestick(x=data.index, open=data["Open"], high=data["High"], low=data["Low"],
+                                 close=data["Close"], name="Candlesticks")]
 
-    for col in ['Open', 'High', 'Low', 'Close']:
-        if col not in data.columns:
-            return empty_fig(label_with_ticker, f"No {col} data for {ticker}")
+        if "MA50" in displayOptions:
+            data["MA50"] = data["Close"].rolling(50).mean()
+            traces.append(go.Scatter(x=data.index, y=data["MA50"], mode="lines", line=dict(color="blue", width=1.5), name="MA50"))
 
-    traces = [
-        go.Candlestick(
-            x=data.index, open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'],
-            name="Candlesticks"
+        if "MA200" in displayOptions:
+            data["MA200"] = data["Close"].rolling(200).mean()
+            traces.append(go.Scatter(x=data.index, y=data["MA200"], mode="lines", line=dict(color="orange", width=1.5), name="MA200"))
+
+        layout = go.Layout(
+            template="plotly_dark",
+            title=f"{label_with_ticker} Candlestick Chart",
+            xaxis=dict(rangeslider=dict(visible=False), type="date"),
+            margin=dict(l=20, r=20, t=50, b=40),
+            uirevision="candles",
+            showlegend=True
         )
-    ]
 
-    if "MA50" in displayOptions:
-        data["MA50"] = data["Close"].rolling(window=50).mean()
-        traces.append(go.Scatter(x=data.index, y=data["MA50"], mode="lines", line=dict(color="blue", width=1.5), name="MA50"))
-    if "MA200" in displayOptions:
-        data["MA200"] = data["Close"].rolling(window=200).mean()
-        traces.append(go.Scatter(x=data.index, y=data["MA200"], mode="lines", line=dict(color="orange", width=1.5), name="MA200"))
-
-    layout = go.Layout(
-        template="plotly_dark",
-        title=f"{label_with_ticker} Candlestick Chart",
-        xaxis=dict(rangeslider=dict(visible=False), type="date"),
-        yaxis=dict(range=handle_yrange(data, relayoutData)),
-        margin=dict(l=20, r=20, t=50, b=40),
-        uirevision=True,
-        showlegend=True
-    )
-
-    return go.Figure(data=traces, layout=layout)
+        return go.Figure(data=traces, layout=layout)
+    except Exception:
+        return empty_fig(label_with_ticker, f"Error fetching data for {ticker_symbol}")
 
 
-def collapse_data(data):
-    data.columns = [col[1] if isinstance(col, tuple) and col[1] else col[0] for col in data.columns]
-    return data
 
-
+# Empty figure
 def empty_fig(title, message):
     fig = go.Figure()
-    fig.add_annotation(
-        text=f"⚠️ {message}",
-        xref="paper", yref="paper", x=0.5, y=0.5,
-        showarrow=False,
-        font=dict(size=20, color="red")
-    )
+    fig.add_annotation(text=f"⚠️ {message}", xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False,
+                       font=dict(size=20, color="red"))
     fig.update_layout(title=f"{title} Candlestick Chart", template="plotly_dark")
     return fig
-
-
-def handle_yrange(data, relayoutData):
-    if relayoutData and 'xaxis.range[0]' in relayoutData:
-        start = pd.to_datetime(relayoutData['xaxis.range[0]'])
-        end = pd.to_datetime(relayoutData['xaxis.range[1]'])
-        visible_data = data.loc[start:end]
-        if not visible_data.empty:
-            y_min = max(visible_data['Low'].min(), 0)
-            y_max = visible_data['High'].max()
-        else:
-            y_min, y_max = data['Low'].min(), data['High'].max()
-    else:
-        y_min, y_max = data['Low'].min(), data['High'].max()
-    y_range_int = y_max - y_min
-    return [y_min - y_range_int / 10, y_max + y_range_int / 10]
-
 
 if __name__ == "__main__":
     app.run(debug=True)

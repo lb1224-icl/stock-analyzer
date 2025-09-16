@@ -146,6 +146,48 @@ body, html {
     height: calc(100vh - 220px); /* fits screen minus top cards and padding */
 }
 
+/* Overview layout */
+.overview-container {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap; /* wraps on smaller screens */
+}
+
+/* Left metrics panel */
+.overview-left {
+    flex: 1;
+    min-width: 250px;
+}
+
+/* Right graph panel */
+.overview-right {
+    flex: 2; /* slightly bigger than left */
+    min-width: 300px;
+}
+
+/* Metric rows */
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.metric-label {
+    color: #aaaaaa;
+    font-weight: 600;
+}
+
+.metric-value {
+    color: white;
+    font-weight: 500;
+}
+
+/* Graph sizing */
+.overview-graph {
+    height: 300px;
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .top-card {
