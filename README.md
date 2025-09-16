@@ -10,14 +10,18 @@ This project is designed to demonstrate **data analysis, visualization, and fina
 - Interactive charts
 - Technical indicators (Moving averages, e.t.c)
 - Risk & performance metrics:
-  - TBC
+  - P/E Ratio
+  - Beta
+  - Volume
+  - Analyst Opinion
+  - E.T.C
 - Dash app for web view
 
 ---
 
 ## Example Visualizations
-*insert screenshots when running*
-
+![Overview](images/overview-example.png)
+![Charts](images/charts-example.png)
 ---
 
 ## Tech Stack
