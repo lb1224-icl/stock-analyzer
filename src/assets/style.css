@@ -1,74 +1,157 @@
-body {
-    background-color: #111111;
-}
-
 /* General page styling */
-.app-container {
+body, html {
     background-color: #111111;
     color: white;
     font-family: "Arial", sans-serif;
-    padding: 20px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
-/* Title */
+/* App container */
+.app-container {
+    padding: 15px;
+}
+
+/* Main title */
 .app-title {
     text-align: center;
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: bold;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     color: #ffffff;
+}
+
+/* Top card: ticker + tabs */
+.top-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    background-color: #1a1a1a;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.top-left {
+    flex: 1;
+    min-width: 180px;
+}
+
+.top-right {
+    align-items: center;
+    min-width: 200px;
+}
+
+/* Tabs container */
+.tabs {
+    display: flex;
+    background-color: #1a1a1a !important; /* dark background */
+    border-radius: 10px 10px 0 0 !important; /* rounded top corners */
+    margin: 0 !important;
+    height: 40px; /* slightly shorter tabs */
+    align-items: center;
+    padding: 0 10px;
+}
+
+/* Individual tab */
+.tab {
+    background-color: transparent !important; /* no background */
+    color: #aaaaaa !important; /* grey text */
+    font-weight: 600 !important;
+    height: 100%; /* match container */
+    width: 100% !important;;
+    display: flex !important;
+    align-items: center !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    transition: background 0.2s, color 0.2s, border-bottom 0.2s !important;
+    outline: none !important; /* remove blue highlight */
+    border: none !important;
+    margin: 0px 2px !important;
+    border-radius: 10px 10px 10px 10px;
+    
+}
+
+/* Selected tab */
+.tab--selected {
+    color: #ffffff !important;
+    border-bottom: 3px solid #ffffff !important; /* white underline only for selected */
+    background-color: #2a2a2a !important; /* subtle darker background */
+    border-top: transparent !important;
+    border-radius: 10px 10px 10px 10px; /* only top corners rounded */
+}
+
+/* Hover effect */
+.tab:hover {
+    background-color: #2a2a2a !important; /* subtle highlight on hover */
+    color: #ffffff !important;
+}
+
+
+/* Remove default focus outline */
+.tab:focus {
+    outline: none !important;
+}
+
+
+/* Cards for options and chart */
+.card {
+    background-color: #1a1a1a;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.5);
 }
 
 /* Section labels */
 .section-label {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-    display: block;
+    font-size: 1rem;
     font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
 }
 
-/* Control panel box */
-.control-panel {
-    display: flex;
-    flex-direction: row;
-    gap: 40px;
-    margin-bottom: 30px;
-    background-color: #1a1a1a;   /* slightly lighter than background */
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.5);
-}
-
-/* Each control (one column) */
-.control {
-    flex: 1;
-    min-width: 200px;
+.Select-value-label {
+    color: white !important;
 }
 
 /* Dropdown styling */
 .dropdown .Select-control,
 .dropdown .Select-menu-outer {
-    background-color: white !important;
-    color: black !important;
+    background-color: #111111 !important;
+    color: white !important;
+}
+
+.dropdown .Select-input input {
+    color: white !important;
 }
 
 /* Checklist styling */
 .checklist {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 15px;
     margin-top: 5px;
 }
 
 .checklist label {
     font-size: 1rem;
+    color: white;
 }
 
 /* Graph styling */
-.graph-container {
-    margin-top: 20px;
+.stock-graph {
+    height: calc(100vh - 220px); /* fits screen minus top cards and padding */
 }
 
-.stock-graph {
-    height: 70vh;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .top-card {
+        flex-direction: column;
+    }
+    .top-right {
+        margin-top: 10px;
+    }
 }
