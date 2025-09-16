@@ -1,6 +1,6 @@
 # 📈 Stock Analyzer Dashboard
 
-An interactive stock analysis tool built with **Python, Plotly, and Dash**.  
+An interactive stock analysis tool built with **Python, Plotly, and Dashgi**.  
 This project is designed to demonstrate **data analysis, visualization, and financial insight**
 
 ---
@@ -26,5 +26,5 @@ This project is designed to demonstrate **data analysis, visualization, and fina
 - **Pandas** – data editing
 - **Dash** – web app framework
 - **yfinance** – stock data
-
+- **yahooquery** - dynamic search queries
 ---
