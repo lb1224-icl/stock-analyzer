@@ -4,6 +4,9 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objs as go
 from yahooquery import search
+import math
+from datetime import datetime
+
 
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 app.title = "Stock Tracker"
@@ -34,19 +37,29 @@ def get_history(ticker_symbol, start="2020-01-01"):
 
 # Utility: fetch key metrics
 def fetch_metrics(ticker_symbol):
-    ticker = yf.Ticker(ticker_symbol)
-    info = ticker.info
-    return {
-        "pe": info.get("trailingPE", "N/A"),
-        "beta": info.get("beta", "N/A"),
-        "volume": info.get("volume", "N/A"),
-        "open": info.get("open", "N/A"),
-        "last_close": info.get("previousClose", "N/A"),
-        "dividend_date": info.get("dividendDate", "N/A"),
-        "earnings_date": info.get("earningsDate", "N/A"),
-        "week52_range": f"{info.get('fiftyTwoWeekLow', 'N/A')} - {info.get('fiftyTwoWeekHigh', 'N/A')}",
-        "analyst": info.get("recommendationKey", "N/A"),
-    }
+    try:
+        ticker = yf.Ticker(ticker_symbol)
+        info = ticker.info
+
+        metrics = {
+            "pe": f"{info.get("trailingPE", "N/A"):.3f}",
+            "beta": f"{info.get("beta", "N/A"):.3f}",
+            "volume": format_number(info.get("volume", "N/A")),
+            "open": format_number(info.get("open", "N/A")),
+            "last_close": format_number(info.get("previousClose", "N/A")),
+            "dividend_date": format_date(info.get("dividendDate", "N/A")),
+            "earnings_date": format_date(info.get("earningsDate", "N/A")),
+            "week52_low": format_number(info.get('fiftyTwoWeekLow', 'N/A')),
+            "week52_high": format_number(info.get('fiftyTwoWeekHigh', 'N/A')),
+            "analyst": info.get("recommendationKey", "N/A").upper(),
+        }
+        return metrics
+    except Exception:
+        return {k: "N/A" for k in [
+            "pe", "beta", "volume", "open", "last_close",
+            "dividend_date", "earnings_date", "week52_range", "analyst"
+        ]}
+
 
 
 # Utility: empty/error figure
@@ -60,9 +73,6 @@ def empty_fig(title, message, chart_type="Chart"):
     fig.update_layout(title=f"{title} {chart_type}", template="plotly_dark")
     return fig
 
-
-#print("Data: ", data)
-#   print("Relayout Data:", relayoutData)
 # Utility: y-axis range handler for zoom
 def handle_yrange(data, relayoutData):
     low_col = "Low" if "Low" in data.columns else "Close"
@@ -90,6 +100,31 @@ def handle_yrange(data, relayoutData):
     return [y_min - y_range_int * 0.05, y_max + y_range_int * 0.05]
 
 
+# Utility: formats numbers into conpact form
+def format_number(value):
+    try:
+        num = float(value)
+        if num >= 1e9:
+            return f"{num/1e9:.2f}B"
+        elif num >= 1e6:
+            return f"{num/1e6:.2f}M"
+        elif num >= 1e3:
+            return f"{num/1e3:.2f}K"
+        else:
+            return f"{num:.2f}"
+    except Exception:
+        return value
+    
+# Utility: formats dates correctly
+def format_date(value):
+    try:
+        if isinstance(value, (int, float)):  # Unix timestamp
+            return datetime.utcfromtimestamp(value).strftime("%d/%m/%Y")
+        elif isinstance(value, str):  # Sometimes already a string
+            return pd.to_datetime(value).strftime("%d/%m/%Y")
+        return pd.to_datetime(value).strftime("%d/%m/%Y")
+    except Exception:
+        return "N/A"
 
 # Layout
 app.layout = html.Div([
@@ -173,17 +208,28 @@ def render_tab(tab, ticker):
             html.Div([
                 html.Div([
                     html.H3("Key Metrics", style={"color": "white", "margin-bottom": "15px"}),
+
                     html.Div([
-                        html.Div([html.Span("PE Ratio:", className="metric-label"), html.Span(id="pe-ratio", className="metric-value")], className="metric-row"),
-                        html.Div([html.Span("Beta:", className="metric-label"), html.Span(id="beta", className="metric-value")], className="metric-row"),
-                        html.Div([html.Span("Volume:", className="metric-label"), html.Span(id="volume", className="metric-value")], className="metric-row"),
-                        html.Div([html.Span("Open:", className="metric-label"), html.Span(id="open", className="metric-value")], className="metric-row"),
-                        html.Div([html.Span("Last Close:", className="metric-label"), html.Span(id="last-close", className="metric-value")], className="metric-row"),
-                        html.Div([html.Span("Dividend Date:", className="metric-label"), html.Span(id="dividend-date", className="metric-value")], className="metric-row"),
-                        html.Div([html.Span("Earnings Date:", className="metric-label"), html.Span(id="earnings-date", className="metric-value")], className="metric-row"),
-                        html.Div([html.Span("52-Week Range:", className="metric-label"), html.Span(id="week52-range", className="metric-value")], className="metric-row"),
-                        html.Div([html.Span("Analysts Opinion:", className="metric-label"), html.Span(id="analyst-opinion", className="metric-value")], className="metric-row"),
-                    ], className="metrics-container")
+                        # Left column
+                        html.Div([
+                            html.Div([html.Span("PE Ratio", className="metric-label"), html.Span(id="pe-ratio", className="metric-value")], className="metric-card"),
+                            html.Div([html.Span("Beta", className="metric-label"), html.Span(id="beta", className="metric-value")], className="metric-card"),
+                            html.Div([html.Span("52-Week Low", className="metric-label"), html.Span(id="week52-low", className="metric-value")], className="metric-card"),
+                            html.Div([html.Span("Volume", className="metric-label"), html.Span(id="volume", className="metric-value")], className="metric-card"),
+                            html.Div([html.Span("Open", className="metric-label"), html.Span(id="open", className="metric-value")], className="metric-card"),
+                            
+                        ], className="metrics-col"),
+
+                        # Right column
+                        html.Div([
+                            html.Div([html.Span("Dividend Date", className="metric-label"), html.Span(id="dividend-date", className="metric-value")], className="metric-card"),
+                            html.Div([html.Span("Earnings Date", className="metric-label"), html.Span(id="earnings-date", className="metric-value")], className="metric-card"),
+                            html.Div([html.Span("52-Week High", className="metric-label"), html.Span(id="week52-high", className="metric-value")], className="metric-card"),
+                            html.Div([html.Span("Analysts Opinion", className="metric-label"), html.Span(id="analyst-opinion", className="metric-value")], className="metric-card"),
+                            html.Div([html.Span("Last Close", className="metric-label"), html.Span(id="last-close", className="metric-value")], className="metric-card"),
+                        ], className="metrics-col"),
+
+                    ], className="metrics-grid")
                 ], className="overview-left card"),
 
                 html.Div([
@@ -232,7 +278,8 @@ def render_tab(tab, ticker):
     Output("last-close", "children"),
     Output("dividend-date", "children"),
     Output("earnings-date", "children"),
-    Output("week52-range", "children"),
+    Output("week52-low", "children"),
+    Output("week52-high", "children"),
     Output("analyst-opinion", "children"),
     Input("display-ticker-dropdown", "value")
 )
@@ -244,7 +291,7 @@ def update_overview_metrics(ticker_symbol):
         return [
             metrics["pe"], metrics["beta"], metrics["volume"], metrics["open"],
             metrics["last_close"], metrics["dividend_date"], metrics["earnings_date"],
-            metrics["week52_range"], metrics["analyst"]
+            metrics["week52_low"], metrics["week52_high"], metrics["analyst"]
         ]
     except Exception:
         return ["N/A"] * 9
