@@ -14,7 +14,7 @@ This project is designed to demonstrate **data analysis, visualization, and fina
   - Beta
   - Volume
   - Analyst Opinion
-  - E.T.C
+  - e.t.c.
 - Dash app for web view
 
 ---
