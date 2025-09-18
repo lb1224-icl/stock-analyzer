@@ -193,7 +193,7 @@ body, html {
 }
 
 .metric-value {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: bold;
     color: white;
 }
@@ -209,6 +209,74 @@ body, html {
 .overview-graph {
     height: 300px;
 }
+
+.compare-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.compare-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.compare-dropdowns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.dash-dropdown{
+    min-width: 300px !important;
+}
+
+.add-stock-btn {
+    background-color: #222;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    height: 36px;
+}
+
+.add-stock-btn:hover {
+    background-color: #333;
+}
+
+/* Dark theme for all dropdowns */
+.Select-control,
+.Select-menu-outer {
+    background-color: #111 !important;
+    color: white !important;
+}
+
+.Select-input input {
+    color: white !important;
+}
+
+.Select-placeholder,
+.Select-value-label {
+    color: white !important;
+}
+
+/* Dropdown options hover */
+.Select-option.is-focused {
+    background-color: #222 !important;
+    color: white !important;
+}
+
+.Select-option.is-selected {
+    background-color: #333 !important;
+    color: white !important;
+}
+
+
+
 
 
 /* Responsive adjustments */

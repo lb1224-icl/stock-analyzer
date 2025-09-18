@@ -15,6 +15,7 @@ This project is designed to demonstrate **data analysis, visualization, and fina
   - Volume
   - Analyst Opinion
   - e.t.c.
+- Multi stock comparison
 - Dash app for web view
 
 ---
