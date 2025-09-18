@@ -23,6 +23,7 @@ This project is designed to demonstrate **data analysis, visualization, and fina
 ## Example Visualizations
 ![Overview](images/overview-example.png)
 ![Charts](images/charts-example.png)
+![Compare](images/compare-example.png)
 ---
 
 ## Tech Stack
